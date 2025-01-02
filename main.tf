@@ -65,7 +65,7 @@ locals {
 
   # Define ENI Configurations if should_create_eni_configs evaluates to true.
   eniConfig = local.should_create_eni_configs ? {
-    create = true,
+    create = false,
     region = var.aws_region,
     subnets = { for az, subnet in zipmap(var.azs, var.vpc_cni_custom_subnet) : az => {
       id = subnet,
@@ -98,15 +98,13 @@ locals {
     local.vpc_cni_addon_extra_config
   )
 }
-
 module "aws_eks" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-eks.git?ref=v20.31.6"
 
-  cluster_name    = local.cluster_name
-  cluster_version = var.cluster_version
-
+  cluster_name                     = local.cluster_name
+  cluster_version                  = "1.30"
   vpc_id                           = var.vpc_id
-  subnet_ids                       = var.private_subnet_ids
+  subnet_ids                       = aws_subnet.private[*].id
   control_plane_subnet_ids         = var.control_plane_subnet_ids
   cluster_ip_family                = var.cluster_ip_family
   cluster_service_ipv4_cidr        = var.cluster_service_ipv4_cidr

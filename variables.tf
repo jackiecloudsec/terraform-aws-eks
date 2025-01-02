@@ -1,13 +1,13 @@
 # tflint-ignore: terraform_unused_declarations
 variable "name" {
   type    = string
-  default = ""
+  default = "entra"
 }
 
 variable "cluster_name" {
   description = "Name of cluster"
   type        = string
-  default     = ""
+  default     = "enthra"
 }
 
 variable "tags" {
@@ -25,7 +25,7 @@ variable "cluster_tags" {
 variable "cluster_version" {
   description = "Kubernetes version to use for EKS cluster"
   type        = string
-  default     = "1.30"
+  default     = "1.30.6"
 }
 
 variable "cluster_enabled_log_types" {
@@ -49,7 +49,7 @@ variable "azs" {
 variable "private_subnet_ids" {
   description = "Private subnet IDs"
   type        = list(string)
-  default     = []
+  default     = ["subnet-0b704f434f147d87e", "subnet-043395dff0991e663"]
 }
 
 variable "cluster_ip_family" {
@@ -149,7 +149,7 @@ variable "cluster_security_group_id" {
 variable "vpc_id" {
   description = "ID of the VPC where the cluster security group will be provisioned"
   type        = string
-  default     = null
+  default     = ""
 }
 
 variable "cluster_security_group_name" {
@@ -302,7 +302,28 @@ variable "cluster_addons" {
   aws eks describe-addon-versions --kubernetes-version $k8s_cluster_version --query 'addons[].{MarketplaceProductUrl: marketplaceInformation.productUrl, Name: addonName, Owner: owner Publisher: publisher, Type: type}' --output table
 EOD
   type        = any
-  default     = {}
+  default = {
+    "vpc-cni" = {
+      name    = "vpc-cni"
+      verison = "v1.12.0"
+    }
+    "coredns" = {
+      name    = "coredns"
+      version = "v1.8.4"
+    }
+    "kube-proxy" = {
+      name    = "kube-proxy"
+      version = "v1.20.0"
+    }
+    "aws-ebs-csi-driver" = {
+      name    = "aws-ebs-csi-driver"
+      version = "v1.5.0"
+    }
+    "aws-efs-csi-driver" = {
+      name    = "aws-efs-csi-driver"
+      version = "v1.3.0"
+    }
+  }
 }
 
 variable "create_cluster_primary_security_group_tags" {
@@ -316,9 +337,7 @@ variable "cluster_timeouts" {
   type        = map(string)
   default     = {}
 }
-
 ################################################################################
-# CloudWatch Log Group
 ################################################################################
 
 variable "create_cloudwatch_log_group" {
